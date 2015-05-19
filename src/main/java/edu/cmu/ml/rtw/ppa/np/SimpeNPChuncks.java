@@ -1,4 +1,4 @@
-package edu.cmu.ml.rtw.ppa.util;
+package edu.cmu.ml.rtw.ppa.np;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,6 +7,8 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import edu.cmu.ml.rtw.ppa.util.FinalData;
+import edu.cmu.ml.rtw.ppa.util.WordSequence;
 import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 

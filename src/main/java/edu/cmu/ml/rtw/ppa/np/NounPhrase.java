@@ -1,4 +1,4 @@
-package edu.cmu.ml.rtw.ppa.util;
+package edu.cmu.ml.rtw.ppa.np;
 
 import java.util.List;
 
