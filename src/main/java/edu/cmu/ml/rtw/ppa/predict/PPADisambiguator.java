@@ -6,7 +6,9 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -14,6 +16,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.IOUtils;
+
 import edu.cmu.ml.rtw.generic.data.annotation.AnnotationType;
 import edu.cmu.ml.rtw.generic.data.annotation.nlp.AnnotationTypeNLP;
 import edu.cmu.ml.rtw.generic.data.annotation.nlp.DocumentNLP;
@@ -29,7 +34,6 @@ import edu.cmu.ml.rtw.ppa.util.FinalData;
 import edu.cmu.ml.rtw.ppa.util.WordSequence;
 import edu.cmu.ml.rtw.ppa.util.WordnetThesaurus;
 import edu.stanford.nlp.classify.LinearClassifier;
-import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.BasicDatum;
 import edu.stanford.nlp.ling.Datum;
 import edu.stanford.nlp.process.Morphology;
@@ -68,6 +72,7 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
 
   public Map<Integer, Pair<String, Double>> annotate(DocumentNLP document) {
     PPAQuad quad;
+    if (extractor == null) extractor = new AttachmentExtractor();
     Map<Integer, Pair<String, Double>> annotations = new HashMap<Integer, Pair<String, Double>>();
     for (int i = 0; i < document.getSentenceCount(); i++) {
       System.out.println(i + "]\t" + document.getSentence(i));
@@ -122,9 +127,9 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
     return quad;
   }
 
+  @SuppressWarnings("unchecked")
   public PPAQuad getPPAPrediction(PPAQuad quad) {
 
-    if (extractor == null) extractor = new AttachmentExtractor();
     if (lemmatizer == null) lemmatizer = new Morphology();
 
     String classifierlocation = "wsj_wkp_nyt.lcf";
@@ -136,24 +141,25 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
     if (classifier == null) {
       try {
         //URL myTestURL = ClassLoader.getSystemResource(classifierlocation);
-        //File file = new File(myTestURL.toURI());
+       // File file = new File(myTestURL.toURI());
 
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(classifierlocation);
         File file = new File("ppa-classfier.clf");
-        FileOutputStream outputStream = new FileOutputStream(file);
-
-        int read = 0;
-        byte[] bytes = new byte[1024];
-
-        while ((read = inputStream.read(bytes)) != -1) {
-          outputStream.write(bytes, 0, read);
-        }
-        outputStream.close();
-        classifier = (LinearClassifier<String, String>) IOUtils.readObjectFromFile(file);
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (ClassNotFoundException e) {
-        // TODO Auto-generated catch block
+                InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(classifierlocation);
+                OutputStream outputStream = new FileOutputStream(file);
+                IOUtils.copy(inputStream, outputStream);
+                outputStream.close();
+        //       
+        //        FileOutputStream outputStream = new FileOutputStream(file);
+        //
+        //        int read = 0;
+        //        byte[] bytes = new byte[1024];
+        //
+        //        while ((read = inputStream.read(bytes)) != -1) {
+        //          outputStream.write(bytes, 0, read);
+        //        }
+        //        outputStream.close();
+        classifier = (LinearClassifier<String, String>)  edu.stanford.nlp.io.IOUtils.readObjectFromFile(file);
+      } catch (Exception e) {
         e.printStackTrace();
       }
     }

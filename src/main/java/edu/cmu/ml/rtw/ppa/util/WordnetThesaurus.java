@@ -16,7 +16,7 @@ import edu.smu.tspell.wordnet.*;
 public class WordnetThesaurus {
 
   static WordNetDatabase database;
-  static final String dictionaryLocation= "src/main/resources/dict";
+  static final String dictionaryLocation= "dict";
 
   private static boolean isGenericType(String type) {
     String ar = type;
