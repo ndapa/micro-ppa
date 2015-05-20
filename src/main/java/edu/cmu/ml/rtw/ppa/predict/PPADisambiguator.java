@@ -25,13 +25,9 @@ import edu.cmu.ml.rtw.generic.model.annotator.nlp.AnnotatorSentence;
 import edu.cmu.ml.rtw.generic.model.annotator.nlp.PipelineNLP;
 import edu.cmu.ml.rtw.generic.model.annotator.nlp.PipelineNLPStanford;
 import edu.cmu.ml.rtw.generic.util.Pair;
-import edu.cmu.ml.rtw.micro.prep.AttachmentExtractor;
-import edu.cmu.ml.rtw.micro.prep.MicroDataTools;
-import edu.cmu.ml.rtw.micro.prep.PipelineNLPMicro;
-import edu.cmu.ml.rtw.micro.prep.util.FinalData;
-import edu.cmu.ml.rtw.micro.prep.util.PPAQuad;
-import edu.cmu.ml.rtw.micro.prep.util.WordSequence;
-import edu.cmu.ml.rtw.micro.prep.util.WordnetThesaurus;
+import edu.cmu.ml.rtw.ppa.util.FinalData;
+import edu.cmu.ml.rtw.ppa.util.WordSequence;
+import edu.cmu.ml.rtw.ppa.util.WordnetThesaurus;
 import edu.stanford.nlp.classify.LinearClassifier;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.ling.BasicDatum;
@@ -42,7 +38,12 @@ import edu.stanford.nlp.stats.Distribution;
 
 public class PPADisambiguator implements AnnotatorSentence<String> {
 
-  public static final AnnotationTypeNLP<String> NN_ANNOTATION_TYPE = new AnnotationTypeNLP<String>("ndapa_sentences ", String.class, Target.SENTENCE);
+  public static final AnnotationTypeNLP<String> PPA_DISAMBIG = new AnnotationTypeNLP<String>("PPA_DISAMBIG", String.class, Target.SENTENCE);
+
+  AttachmentExtractor extractor;
+  Morphology lemmatizer;
+  LinearClassifier<String, String> classifier;
+  boolean stemming = true;
 
   static final AnnotationType<?>[] REQUIRED_ANNOTATIONS = new AnnotationType<?>[] {
       AnnotationTypeNLP.TOKEN,
@@ -50,29 +51,58 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
       AnnotationTypeNLP.POS };
 
   public String getName() {
-    return "Ndapa-sentences";
+    return "mirco-ppa";
   }
 
   public boolean measuresConfidence() {
-    return false;
+    return true;
   }
 
   public AnnotationType<String> produces() {
-    return NN_ANNOTATION_TYPE;
+    return PPA_DISAMBIG;
   }
 
   public AnnotationType<?>[] requires() {
     return REQUIRED_ANNOTATIONS;
   }
 
-  public Map<Integer, Pair<String, Double>> annotate(DocumentNLP arg0) {
-    return null;
+  public Map<Integer, Pair<String, Double>> annotate(DocumentNLP document) {
+    PPAQuad quad;
+    Map<Integer, Pair<String, Double>> annotations = new HashMap<Integer, Pair<String, Double>>();
+    for (int i = 0; i < document.getSentenceCount(); i++) {
+      System.out.println(i + "]\t" + document.getSentence(i));
+      List<PoSTag> tags = document.getSentencePoSTags(i);
+      List<String> words = document.getSentenceTokenStrs(i);
+
+      WordSequence wordSequence = new WordSequence();
+      for (int j = 0; j < words.size(); j++) {
+        System.out.println("\t" + j + "." + words.get(j) + "/" + tags.get(j).name() + "/");
+        wordSequence.appendTag(tags.get(j).name());
+        wordSequence.appendWord(words.get(j));
+      }
+      List<String> tuples = extractor.findPPAsNoGroups(wordSequence);
+
+      for (String instance : tuples) {
+        quad = getPPQuad(instance);
+        PPAQuad qdPredicted = getPPAPrediction(quad);
+        annotations.put(i, new Pair<String, Double>(quad.toString() + "\t" + qdPredicted.label, qdPredicted.confidenceOfLabel));
+        // System.out.println(quad.toString() + "\t" + getPPAPrediction(quad).label);
+
+        //  System.out.println(qd.toString() + "|\t" + qdPredicted.label+" @ "+qdPredicted.confidenceOfLabel) ;
+      }
+
+      // System.out.println(i+")\t"+ document.List<PoSTag> getSentencePoSTags
+    }
+
+    //        List<PPAQuad> quads =  getQuadsNYCLabelled("src/main/resources/gold_NYC.tsv");
+    //        for(PPAQuad qd: quads){
+    //          PPAQuad qdPredicted = getPPAPrediction(qd);
+    //          System.out.println(qd.toString() + "|\t" + qdPredicted.label+" @ "+qdPredicted.confidenceOfLabel) ;
+    //        }
+    //    for (Annotation annotation : annotations)
+    //      System.out.println(annotation.toJsonString());
+    return annotations;
   }
-  
-  AttachmentExtractor extractor;
-  Morphology lemmatizer;
-  LinearClassifier<String, String> classifier;
-  boolean stemming = true;
 
   public PPAQuad getPPQuad(String instance) {
     if (lemmatizer == null) {
@@ -93,6 +123,41 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
   }
 
   public PPAQuad getPPAPrediction(PPAQuad quad) {
+
+    if (extractor == null) extractor = new AttachmentExtractor();
+    if (lemmatizer == null) lemmatizer = new Morphology();
+
+    String classifierlocation = "wsj_wkp_nyt.lcf";
+
+    //Get file from resources folder
+    // ClassLoader classLoader = getClass().getClassLoader();
+    // File file = new File(classLoader.getResource(classifierlocation).getFile());
+
+    if (classifier == null) {
+      try {
+        //URL myTestURL = ClassLoader.getSystemResource(classifierlocation);
+        //File file = new File(myTestURL.toURI());
+
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(classifierlocation);
+        File file = new File("ppa-classfier.clf");
+        FileOutputStream outputStream = new FileOutputStream(file);
+
+        int read = 0;
+        byte[] bytes = new byte[1024];
+
+        while ((read = inputStream.read(bytes)) != -1) {
+          outputStream.write(bytes, 0, read);
+        }
+        outputStream.close();
+        classifier = (LinearClassifier<String, String>) IOUtils.readObjectFromFile(file);
+      } catch (IOException e) {
+        e.printStackTrace();
+      } catch (ClassNotFoundException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
+
     HashMap<String, String> verbNetTemplates = new HashMap<String, String>();
     //(labelledData);
     HashMap<String, HashSet<String>> similarVerbSets = new HashMap<String, HashSet<String>>();
@@ -360,53 +425,19 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
 
   @SuppressWarnings("unchecked")
   public void testDocument() throws URISyntaxException, IOException {
-    extractor = new AttachmentExtractor();
-    lemmatizer = new Morphology();
-    PPAQuad quad;
 
-    String classifierlocation = "wsj_wkp_nyt.lcf";
-
-    //Get file from resources folder
-    // ClassLoader classLoader = getClass().getClassLoader();
-    // File file = new File(classLoader.getResource(classifierlocation).getFile());
-
-    if (classifier == null) {
-      try {
-        //URL myTestURL = ClassLoader.getSystemResource(classifierlocation);
-        //File file = new File(myTestURL.toURI());
-
-        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(classifierlocation);
-        File file = new File("ppa-classfier.clf");
-        FileOutputStream outputStream = new FileOutputStream(file);
-
-        int read = 0;
-        byte[] bytes = new byte[1024];
-
-        while ((read = inputStream.read(bytes)) != -1) {
-          outputStream.write(bytes, 0, read);
-        }
-        outputStream.close();
-        classifier = (LinearClassifier<String, String>) IOUtils.readObjectFromFile(file);
-      } catch (IOException e) {
-        e.printStackTrace();
-      } catch (ClassNotFoundException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
-    }
-
-    PipelineNLPStanford stanfordPipe = new PipelineNLPStanford();
+    // PipelineNLPStanford stanfordPipe = new PipelineNLPStanford();
 
     // this is where we add our micro-reader
-    PipelineNLPMicro microPipe = new PipelineNLPMicro();
+    // PipelineNLPMicro microPipe = new PipelineNLPMicro();
 
     // we now tell the stanford to add new microreader pipeline
-    PipelineNLP stanfordMicroPipe = stanfordPipe.weld(microPipe);
+    //PipelineNLP stanfordMicroPipe = stanfordPipe.weld(microPipe);
 
     // pass a document through the pipeline
     String billDoc = "I baked a cake in the oven.  Sam helped.";
     String doc = "John  ate salad with a fork. Bob cooked rice in March 1945. Google bought  20% of  Youtube.";
-    DocumentNLP document = new DocumentNLPInMemory(new MicroDataTools(), "Ndapa's document", doc, Language.English, stanfordMicroPipe);
+    // DocumentNLP document = new DocumentNLPInMemory(new MicroDataTools(), "Ndapa's document", doc, Language.English, stanfordMicroPipe);
 
     //    AnnotationType<?>[] REQUIRED_ANNOTATIONS = new AnnotationType<?>[] {
     //        AnnotationTypeNLP.TOKEN,
@@ -414,33 +445,33 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
     //        AnnotationTypeNLP.POS };
     // List<Annotation> annotations = document.toMicroAnnotation().getAllAnnotations();
 
-    for (int i = 0; i < document.getSentenceCount(); i++) {
-      System.out.println(i + "]\t" + document.getSentence(i));
-      List<PoSTag> tags = document.getSentencePoSTags(i);
-      List<String> words = document.getSentenceTokenStrs(i);
-
-      WordSequence wordSequence = new WordSequence();
-
-      for (int j = 0; j < words.size(); j++) {
-        System.out.println("\t" + j + "." + words.get(j) + "/" + tags.get(j).name() + "/");
-        wordSequence.appendTag(tags.get(j).name());
-        wordSequence.appendWord(words.get(j));
-      }
-      List<String> tuples = extractor.findPPAsNoGroups(wordSequence);
-
-      for (String instance : tuples) {
-        quad = getPPQuad(instance);
-        System.out.println(quad.toString() + "\t" + getPPAPrediction(quad).label);
-      }
-      
-      // System.out.println(i+")\t"+ document.List<PoSTag> getSentencePoSTags
-    }
-    
-    List<PPAQuad> quads =  getQuadsNYCLabelled("src/main/resources/gold_NYC.tsv");
-    for(PPAQuad qd: quads){
-      PPAQuad qdPredicted = getPPAPrediction(qd);
-      System.out.println(qd.toString() + "|\t" + qdPredicted.label+" @ "+qdPredicted.confidenceOfLabel) ;
-    }
+    //    for (int i = 0; i < document.getSentenceCount(); i++) {
+    //      System.out.println(i + "]\t" + document.getSentence(i));
+    //      List<PoSTag> tags = document.getSentencePoSTags(i);
+    //      List<String> words = document.getSentenceTokenStrs(i);
+    //
+    //      WordSequence wordSequence = new WordSequence();
+    //
+    //      for (int j = 0; j < words.size(); j++) {
+    //        System.out.println("\t" + j + "." + words.get(j) + "/" + tags.get(j).name() + "/");
+    //        wordSequence.appendTag(tags.get(j).name());
+    //        wordSequence.appendWord(words.get(j));
+    //      }
+    //      List<String> tuples = extractor.findPPAsNoGroups(wordSequence);
+    //
+    //      for (String instance : tuples) {
+    //        quad = getPPQuad(instance);
+    //        System.out.println(quad.toString() + "\t" + getPPAPrediction(quad).label);
+    //      }
+    //      
+    //      // System.out.println(i+")\t"+ document.List<PoSTag> getSentencePoSTags
+    //    }
+    //    
+    //    List<PPAQuad> quads =  getQuadsNYCLabelled("src/main/resources/gold_NYC.tsv");
+    //    for(PPAQuad qd: quads){
+    //      PPAQuad qdPredicted = getPPAPrediction(qd);
+    //      System.out.println(qd.toString() + "|\t" + qdPredicted.label+" @ "+qdPredicted.confidenceOfLabel) ;
+    //    }
     //    for (Annotation annotation : annotations)
     //      System.out.println(annotation.toJsonString());
   }

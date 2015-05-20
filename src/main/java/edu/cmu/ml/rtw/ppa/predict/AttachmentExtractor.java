@@ -22,19 +22,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.FileSplit;
-import org.apache.hadoop.mapred.OutputCollector;
 
 import edu.cmu.ml.rtw.ppa.np.NounPhrase;
+import edu.cmu.ml.rtw.ppa.np.SimpeNPChuncks;
+import edu.cmu.ml.rtw.ppa.util.FinalData;
+import edu.cmu.ml.rtw.ppa.util.Preposition;
 import edu.cmu.ml.rtw.ppa.util.WordSequence;
 import edu.stanford.nlp.ling.HasWord;
-import edu.stanford.nlp.ling.TaggedWord;
 import edu.stanford.nlp.ling.Word;
-import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 
 /** Extracts prepositional phrases quads from text**/
 public class AttachmentExtractor {
@@ -327,28 +322,6 @@ public class AttachmentExtractor {
     return Collections.unmodifiableMap(namedGroups);
   }
 
-
-
-
-//  public void testParser() throws IOException, ClassNotFoundException {
-//    String textDocument = "John  ate salad with a fork.";
-//    textDocument = "Success requires food from John.";
-//
-//    MaxentTagger tagger = new MaxentTagger("edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger");
-//
-//    List<List<HasWord>> sentences = MaxentTagger.tokenizeText(new StringReader(textDocument));
-//    for (List<HasWord> sentence : sentences) {
-//      ArrayList<TaggedWord> taggedSentence = tagger.tagSentence(sentence);
-//      WordSequence wordSequence = new WordSequence();
-//      for (int twPos = 0; twPos < taggedSentence.size(); twPos++) {
-//        TaggedWord tw = taggedSentence.get(twPos);
-//        wordSequence.appendTag(tw.tag());
-//        wordSequence.appendWord(tw.word());
-//      }
-//      findPPAsNoGroups(wordSequence);
-//    }
-//
-//  }
 
   public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
     AttachmentExtractor me = new AttachmentExtractor();
