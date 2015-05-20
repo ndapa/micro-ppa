@@ -70,7 +70,7 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
     if (extractor == null) extractor = new AttachmentExtractor();
     Map<Integer, Pair<String, Double>> annotations = new HashMap<Integer, Pair<String, Double>>();
     for (int i = 0; i < document.getSentenceCount(); i++) {
-      System.out.println(i + "]\t" + document.getSentence(i));
+     // System.out.println(i + "]\t" + document.getSentence(i));
       List<PoSTag> tags = document.getSentencePoSTags(i);
       List<String> words = document.getSentenceTokenStrs(i);
 
