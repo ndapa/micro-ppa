@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -22,13 +21,9 @@ import org.apache.commons.io.IOUtils;
 import edu.cmu.ml.rtw.generic.data.annotation.AnnotationType;
 import edu.cmu.ml.rtw.generic.data.annotation.nlp.AnnotationTypeNLP;
 import edu.cmu.ml.rtw.generic.data.annotation.nlp.DocumentNLP;
-import edu.cmu.ml.rtw.generic.data.annotation.nlp.DocumentNLPInMemory;
-import edu.cmu.ml.rtw.generic.data.annotation.nlp.Language;
 import edu.cmu.ml.rtw.generic.data.annotation.nlp.PoSTag;
 import edu.cmu.ml.rtw.generic.data.annotation.nlp.AnnotationTypeNLP.Target;
 import edu.cmu.ml.rtw.generic.model.annotator.nlp.AnnotatorSentence;
-import edu.cmu.ml.rtw.generic.model.annotator.nlp.PipelineNLP;
-import edu.cmu.ml.rtw.generic.model.annotator.nlp.PipelineNLPStanford;
 import edu.cmu.ml.rtw.generic.util.Pair;
 import edu.cmu.ml.rtw.ppa.util.FinalData;
 import edu.cmu.ml.rtw.ppa.util.WordSequence;
@@ -81,7 +76,7 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
 
       WordSequence wordSequence = new WordSequence();
       for (int j = 0; j < words.size(); j++) {
-        System.out.println("\t" + j + "." + words.get(j) + "/" + tags.get(j).name() + "/");
+      //  System.out.println("\t" + j + "." + words.get(j) + "/" + tags.get(j).name() + "/");
         wordSequence.appendTag(tags.get(j).name());
         wordSequence.appendWord(words.get(j));
       }
@@ -319,7 +314,7 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
       features.add(if1);
     }
 
-    HashSet<String> N1WordNetTypes = WordnetThesaurus.getParentsRecursivelyNounsOnly(N1);
+   /* HashSet<String> N1WordNetTypes = WordnetThesaurus.getParentsRecursivelyNounsOnly(N1);
     for (String n1 : N1WordNetTypes) {
       String NN1 = "N1_type" + n1;
       features.add(NN1);
@@ -358,7 +353,7 @@ public class PPADisambiguator implements AnnotatorSentence<String> {
       //          features.add(N0);
       //        }
       //      }
-    }
+    }*/
 
     String[] arg2Parts = N2.split(" ");
     boolean startsWithDigit = false;

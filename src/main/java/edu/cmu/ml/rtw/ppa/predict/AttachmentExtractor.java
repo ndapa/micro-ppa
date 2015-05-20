@@ -22,7 +22,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
-
 import edu.cmu.ml.rtw.ppa.np.NounPhrase;
 import edu.cmu.ml.rtw.ppa.np.SimpeNPChuncks;
 import edu.cmu.ml.rtw.ppa.util.FinalData;
@@ -131,7 +130,7 @@ public class AttachmentExtractor {
         if (wordSequence.getTag(i).indexOf("NP") >= 0) {
           updatedwordSequence.appendWord(word);
           updatedwordSequence.appendTag("OO");
-          System.err.println("\t\tSkipping: " + word + " tag: " + wordSequence.getTag(i));
+          // System.err.println("\t\tSkipping: " + word + " tag: " + wordSequence.getTag(i));
         } else {
           updatedwordSequence.appendWord(word);
           updatedwordSequence.appendTag(wordSequence.getTag(i));
@@ -188,7 +187,7 @@ public class AttachmentExtractor {
 
       instanceFound = N0 + "\t" + V + "\t" + N1 + "\t" + P + "\t" + N2;
       // if (CDfound)
-      System.out.println("[1]" + instanceFound);
+      // System.out.println("[1]" + instanceFound);
       result.add(instanceFound);
     }
 
@@ -241,13 +240,11 @@ public class AttachmentExtractor {
 
       instanceFound = N0 + "\t" + V + "\t" + N1 + "\t" + P + "\t" + N2;
       // if (CDfound)
-      System.out.println("[2]" + instanceFound);
+      //  System.out.println("[2]" + instanceFound);
       result.add(instanceFound);
     }
     return result;
   }
-
-
 
   public List<String> findPPAs(WordSequence wordSequence) {
     List<String> result = new ArrayList<String>();
@@ -321,7 +318,6 @@ public class AttachmentExtractor {
 
     return Collections.unmodifiableMap(namedGroups);
   }
-
 
   public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
     AttachmentExtractor me = new AttachmentExtractor();
