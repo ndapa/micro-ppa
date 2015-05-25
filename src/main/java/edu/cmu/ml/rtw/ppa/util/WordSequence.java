@@ -24,8 +24,6 @@ public class WordSequence {
 
   public String tagString = "";
 
-  //map word positions to words
-
   public void appendWord(String word) {
     words.add(word);
     getWordStringPositions();

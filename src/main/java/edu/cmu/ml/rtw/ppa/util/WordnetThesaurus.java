@@ -7,8 +7,6 @@ import java.util.List;
 import edu.smu.tspell.wordnet.*;
 
 /**
- * java -cp $CLASSPATH:evidence.jar edu.cmu.evidence.stats.WordnetAntonyms
- * 
  * @author ndapa
  * 
  */

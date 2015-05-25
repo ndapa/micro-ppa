@@ -6,23 +6,7 @@ import edu.stanford.nlp.process.Morphology;
 
 public class PhraseOps {
 
-//  /** Stem to base form, just the First Word **/
-//  public static String toStemFirstWord(Morphology lemmatizer, String phrase) {
-//    StringBuilder sb = new StringBuilder();
-//    String[] words = phrase.split(" ");
-//    for (int i = 0; i < words.length; i++) {
-//      String word = words[i];
-//      // if (i == 0) {
-//      word = lemmatizer.stem(word);
-//      // }
-//      sb.append(word + " ");
-//
-//    }
-//
-//    return sb.toString().trim();
-//  }
 
-  /** To Upper **/
   public static String toUpperCase(String phrase) {
     StringBuilder sb = new StringBuilder();
     for (String word : phrase.split(" ")) {

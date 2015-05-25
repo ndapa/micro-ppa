@@ -1,12 +1,7 @@
 package edu.cmu.ml.rtw.ppa.predict;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -16,16 +11,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.GZIPInputStream;
 
 import edu.cmu.ml.rtw.ppa.np.NounPhrase;
 import edu.cmu.ml.rtw.ppa.np.SimpeNPChuncks;
 import edu.cmu.ml.rtw.ppa.util.FinalData;
-import edu.cmu.ml.rtw.ppa.util.Preposition;
 import edu.cmu.ml.rtw.ppa.util.WordSequence;
 import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.ling.Word;
@@ -40,7 +31,6 @@ public class AttachmentExtractor {
   protected final String NP0 = "(?<name0>" + nounPhraseProper + ")";
   protected final String ppambig_quad = NP0 + "(?<verb>(VB\\s|VBD\\s|VBN\\s|VBZ\\s))(?<name1>" + nounPhrase + ")(?<prep>(IN\\s))(?<name2>"
       + nounPhrase + ")";
-
   protected final String ppambig_quad_common = NP0 + "(?<verb>(VB\\s|VBD\\s|VBN\\s|VBZ\\s))(?<name1>" + nounPhrase_common
       + ")(?<prep>(IN\\s))(?<name2>(JJS\\s){0,}(JJ\\s){0,}" + nounPhrase_common + ")";
   protected final String ppambig_quad_common2 = NP0 + "(?<verb>(VB\\s|VBD\\s|VBN\\s|VBZ\\s))(?<name1>" + nounPhrase_common
@@ -64,7 +54,6 @@ public class AttachmentExtractor {
     try {
       chunker = new SimpeNPChuncks();
     } catch (Exception e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
   }
@@ -75,8 +64,8 @@ public class AttachmentExtractor {
    * @param wordSequence
    * @return
    */
-  public List<String> findPPAsNoGroups(WordSequence wordSequence) {
-    List<String> result = new ArrayList<String>();
+  public List<PPAQuad> findPPAsNoGroups(WordSequence wordSequence) {
+    List<PPAQuad> result = new ArrayList<PPAQuad>();
     // first find the NPs
     WordSequence wordSequenceRaw = wordSequence;
     List<NounPhrase> nps = chunker.locateNounPhrasePosition(wordSequenceRaw);
@@ -154,7 +143,6 @@ public class AttachmentExtractor {
       String instanceFound = "";
       int compID = 0;
       String N0 = null, V = null, N1 = null, P = null, N2 = null;
-      boolean CDfound = false;
       while (count > 0) {
         count--;
         if (updatedwordSequence.tags.get(wordSeqStart).equals("DT") || updatedwordSequence.tags.get(wordSeqStart).equals("CD")) {
@@ -183,12 +171,14 @@ public class AttachmentExtractor {
       }
 
       // filter out said verb to be and only keep frequent preps
-      if (Preposition.istoBeVerb(V) || !Preposition.isFrequentPreposition(P)) continue;
+      // if (Preposition.istoBeVerb(V) || !Preposition.isFrequentPreposition(P)) continue;
 
       instanceFound = N0 + "\t" + V + "\t" + N1 + "\t" + P + "\t" + N2;
+      PPAQuad quad = new PPAQuad(V, N1, P, N2, "");
+      quad.setN0(N0);
       // if (CDfound)
       // System.out.println("[1]" + instanceFound);
-      result.add(instanceFound);
+      result.add(quad);
     }
 
     quadraplesPattern = Pattern.compile(ppambig_quad_no_groupingTwoVerbs);
@@ -236,12 +226,10 @@ public class AttachmentExtractor {
         compID++;
       }
 
-      if (Preposition.istoBeVerb(V) || !Preposition.isFrequentPreposition(P)) continue;
-
       instanceFound = N0 + "\t" + V + "\t" + N1 + "\t" + P + "\t" + N2;
-      // if (CDfound)
-      //  System.out.println("[2]" + instanceFound);
-      result.add(instanceFound);
+      PPAQuad quad = new PPAQuad(V, N1, P, N2, "");
+      quad.setN0(N0);
+      result.add(quad);
     }
     return result;
   }

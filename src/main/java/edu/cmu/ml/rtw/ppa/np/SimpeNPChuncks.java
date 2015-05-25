@@ -72,10 +72,8 @@ public class SimpeNPChuncks {
 
   int maxSentenceSize = 200;
   boolean lowerCaseNPs = false;
-  MaxentTagger tagger;
 
   public SimpeNPChuncks() throws Exception {
-    tagger = new MaxentTagger("edu/stanford/nlp/models/pos-tagger/english-left3words/english-left3words-distsim.tagger");
   }
 
   /** Patterns with not content-bearing words */

@@ -1,6 +1,8 @@
 package edu.cmu.ml.rtw.ppa.predict;
 
-public class PPAQuad {
+import edu.cmu.ml.rtw.generic.util.StringSerializable;
+
+public class PPAQuad implements StringSerializable {
 
   public String N0;
   public String verb;
@@ -113,8 +115,27 @@ public class PPAQuad {
     this.N0 = N0;
   }
 
+  @Override
   public String toString() {
-    return verb + "\t" + N1 + "\t" + prep + "\t" + N2;
+    return verb + "\t" + N1 + "\t" + prep + "\t" + N2 + "\t" + label;
+  }
+
+  public boolean fromString(String arg0) {
+    try {
+      String[] parts = arg0.toLowerCase().split("\t");
+      int i = 0;
+      String label = parts[i++].trim();
+      String V = parts[i++].trim();
+      String N1 = parts[i++].trim();
+      String prep = parts[i++].trim();
+      String N2 = parts[i++].trim();
+
+      new PPAQuad(V, N1, prep, N2, label);
+    } catch (Exception e) {
+      e.printStackTrace();
+      return false;
+    }
+    return true;
   }
 
   public String toStringLabelled() {
