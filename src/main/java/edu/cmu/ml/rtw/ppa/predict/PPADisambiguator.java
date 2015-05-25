@@ -260,8 +260,7 @@ public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
   }
 
   /**
-   * Returns back-off features of Collins and Brooks
-   * and add knowledge features
+   * Returns back-off features plus knowledge features
    * 
    * @param V
    * @param N1
