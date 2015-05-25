@@ -37,7 +37,7 @@ import edu.stanford.nlp.stats.Distribution;
 
 public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
 
-  public static final AnnotationTypeNLP<PPAQuad> PPA_DISAMBIG = new AnnotationTypeNLP<PPAQuad>("NELL PPA Disambiguation", PPAQuad.class,
+  public static final AnnotationTypeNLP<PPAQuad> PPA_DISAMBIG = new AnnotationTypeNLP<PPAQuad>("cmunell_ppa-0.0.1", PPAQuad.class,
       Target.SENTENCE);
 
   AttachmentExtractor extractor;
