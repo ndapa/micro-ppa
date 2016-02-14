@@ -37,7 +37,7 @@ import edu.stanford.nlp.stats.Distribution;
 
 public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
 
-  public static final AnnotationTypeNLP<PPAQuad> PPA_DISAMBIG = new AnnotationTypeNLP<PPAQuad>("cmunell_ppa-0.0.1", PPAQuad.class,
+  public static final AnnotationTypeNLP<PPAQuad> PPA_DISAMBIG = new AnnotationTypeNLP<PPAQuad>("nell-ppa", PPAQuad.class,
       Target.SENTENCE);
 
   AttachmentExtractor extractor;
@@ -53,7 +53,7 @@ public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
       AnnotationTypeNLP.POS };
 
   public String getName() {
-    return "nell-ppa";
+    return "cmunell_ppa-0.0.1";
   }
 
   public boolean measuresConfidence() {
