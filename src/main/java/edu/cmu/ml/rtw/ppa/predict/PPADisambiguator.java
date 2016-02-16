@@ -53,7 +53,7 @@ public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
       AnnotationTypeNLP.POS };
 
   public String getName() {
-    return "nell-ppa";
+    return "cmunell_ppa-0.0.1";
   }
 
   public boolean measuresConfidence() {
