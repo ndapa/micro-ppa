@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -37,8 +38,7 @@ import edu.stanford.nlp.stats.Distribution;
 
 public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
 
-  public static final AnnotationTypeNLP<PPAQuad> PPA_DISAMBIG = new AnnotationTypeNLP<PPAQuad>("cmunell_ppa-0.0.1", PPAQuad.class,
-      Target.SENTENCE);
+  public static final AnnotationTypeNLP<PPAQuad> PPA_DISAMBIG = new AnnotationTypeNLP<PPAQuad>("cmunell_ppa-0.0.1", PPAQuad.class, Target.SENTENCE);
 
   AttachmentExtractor extractor;
   Morphology lemmatizer;
@@ -105,10 +105,15 @@ public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
     String classifierlocation = "wsj_wkp_nyt.lcf";
     if (classifier == null) {
       try {
-        //URL myTestURL = ClassLoader.getSystemResource(classifierlocation);
+        // URL myTestURL = ClassLoader.getSystemResource(classifierlocation);
         // File file = new File(myTestURL.toURI());
 
-        File file = new File("ppa-classfier-md.clf");
+        File file = new File(".ppa-classfier-md.clf");
+        if (file.exists()) {
+          file.delete();
+        }
+        // Delete temp file when program exits.
+        file.deleteOnExit();
         if (!file.exists()) {
           InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(classifierlocation);
           OutputStream outputStream = new FileOutputStream(file);
@@ -116,6 +121,7 @@ public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
           outputStream.close();
         }
         classifier = (LinearClassifier<String, String>) edu.stanford.nlp.io.IOUtils.readObjectFromFile(file);
+        // classifier = (LinearClassifier<String, String>) edu.stanford.nlp.io.IOUtils.readObjectFromObjectStream(this.getClass().getClassLoader().getResourceAsStream(classifierlocation));
       } catch (Exception e) {
         e.printStackTrace();
       }
