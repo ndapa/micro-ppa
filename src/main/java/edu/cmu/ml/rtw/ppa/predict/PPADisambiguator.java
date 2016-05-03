@@ -108,7 +108,8 @@ public class PPADisambiguator implements AnnotatorSentence<PPAQuad> {
         // URL myTestURL = ClassLoader.getSystemResource(classifierlocation);
         // File file = new File(myTestURL.toURI());
 
-        File file = new File(".ppa-classfier-md.clf");
+        File file = File.createTempFile("ppa-classifier-md", ".clf"); 
+        System.out.println("PPADisambiguator: using classifier file " + file.getAbsolutePath());
         if (file.exists()) {
           file.delete();
         }
